@@ -36,6 +36,9 @@ interface Drag {
   x: number
   y: number
   lift: number
+  /** Lift for a touch at the top of the board; it shrinks near the bottom edge of the screen. */
+  baseLift: number
+  rows: number
   t0: number
   /** Snapped board position when the piece fits there. */
   at: { r: number; c: number } | null
@@ -674,6 +677,22 @@ export function playScreen(app: App): Screen {
     return options[0] ? { r: options[0].r, c: options[0].c } : null
   }
 
+  /**
+   * How far the piece floats above the finger. Full lift over most of the screen, but
+   * when the board reaches close to the bottom edge (iPad landscape) the lift fades out
+   * near that edge, so the finger can still bring a piece to the bottom row.
+   */
+  function liftAt(d: Drag): number {
+    if (!d.baseLift) return 0
+    const lowest = L.H - 14
+    // The most lift that still lets the piece's centre reach the bottom row.
+    const room = Math.max(0, lowest - (L.board.y + L.board.h - (d.rows * L.cell) / 2))
+    if (room >= d.baseLift) return d.baseLift
+    const start = lowest - d.baseLift * 2
+    const t = Math.min(1, Math.max(0, (d.y - start) / (lowest - start)))
+    return d.baseLift + (room - d.baseLift) * t
+  }
+
   const local = (e: PointerEvent) => {
     const r = canvas.getBoundingClientRect()
     return { x: e.clientX - r.left, y: e.clientY - r.top }
@@ -695,8 +714,9 @@ export function playScreen(app: App): Screen {
     const p = state.tray[i]!
     const { rows } = pieceSize(p)
     // Lift the piece above the finger so Wyne can see where it goes.
-    const lift = e.pointerType === 'mouse' ? 0 : rows * L.cell * 0.5 + L.cell * 1.1
-    drag = { index: i, pointerId: e.pointerId, x, y, lift, t0: performance.now(), at: null }
+    const baseLift = e.pointerType === 'mouse' ? 0 : rows * L.cell * 0.5 + L.cell * 1.1
+    drag = { index: i, pointerId: e.pointerId, x, y, lift: 0, baseLift, rows, t0: performance.now(), at: null }
+    drag.lift = liftAt(drag)
     drag.at = snap(drag)
     audio.play('pick')
     kat.hush()
@@ -707,6 +727,7 @@ export function playScreen(app: App): Screen {
     const { x, y } = local(e)
     drag.x = x
     drag.y = y
+    drag.lift = liftAt(drag)
     const at = snap(drag)
     if (at && (!drag.at || at.r !== drag.at.r || at.c !== drag.at.c)) audio.play('tap')
     drag.at = at
@@ -926,8 +947,15 @@ export function playScreen(app: App): Screen {
   }
 
   // ---- Start ----
+  // Turning the iPad: WebKit can fire 'resize' before the new size is laid out, so also
+  // watch the element itself and look again a moment after an orientation change.
   const onResize = () => resize()
+  const settle = () => [60, 250, 600].forEach((ms) => window.setTimeout(() => alive && resize(), ms))
+  const ro = new ResizeObserver(onResize)
+  ro.observe(el)
   window.addEventListener('resize', onResize)
+  window.addEventListener('orientationchange', settle)
+  window.visualViewport?.addEventListener('resize', onResize)
   requestAnimationFrame(() => {
     resize()
     raf = requestAnimationFrame(frame)
@@ -950,6 +978,8 @@ export function playScreen(app: App): Screen {
     showRescue,
     showEnd,
     sendPapa,
+    /** Lift for a touch drag of a piece this many rows tall, with the finger at y. */
+    liftFor: (rows: number, y: number) => liftAt({ baseLift: rows * L.cell * 0.5 + L.cell * 1.1, rows, y } as Drag),
     get papa() {
       return papa.pos
     },
@@ -962,6 +992,9 @@ export function playScreen(app: App): Screen {
       cancelAnimationFrame(raf)
       window.clearTimeout(overTimer)
       window.removeEventListener('resize', onResize)
+      window.removeEventListener('orientationchange', settle)
+      window.visualViewport?.removeEventListener('resize', onResize)
+      ro.disconnect()
       papa.dispose()
       kat.destroy()
       app.persist()

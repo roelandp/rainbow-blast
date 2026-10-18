@@ -37,10 +37,13 @@ async function dragPiece(page, cdp, index, row, col, { release = true } = {}) {
     const rows = Math.max(...p.cells.map((x) => x[0])) + 1
     const cols = Math.max(...p.cells.map((x) => x[1])) + 1
     const s = L.slots[i]
-    const lift = rows * L.cell * 0.5 + L.cell * 1.1
+    // Find the finger height where the lifted piece lands on the target (lift fades near the bottom).
+    const target = L.board.y + (r + rows / 2) * L.cell
+    let fy = target
+    for (let k = 0; k < 20; k++) fy = target + window.__play.liftFor(rows, fy)
     return {
       from: { x: s.x + s.w / 2, y: s.y + s.h / 2 },
-      to: { x: L.board.x + (c + cols / 2) * L.cell, y: L.board.y + (r + rows / 2) * L.cell + lift },
+      to: { x: L.board.x + (c + cols / 2) * L.cell, y: fy },
     }
   }, [index, row, col])
   const touch = (type, p) =>

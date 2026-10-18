@@ -461,11 +461,15 @@ export class App {
     const ro = new ResizeObserver(measure)
     if (top) ro.observe(top)
     if (bottom) ro.observe(bottom)
+    // After turning the iPad the new size can arrive late: measure again a moment later.
+    const settle = () => [60, 250, 600].forEach((ms) => window.setTimeout(measure, ms))
     window.addEventListener('resize', measure)
+    window.addEventListener('orientationchange', settle)
     requestAnimationFrame(measure)
     return () => {
       ro.disconnect()
       window.removeEventListener('resize', measure)
+      window.removeEventListener('orientationchange', settle)
     }
   }
 }
