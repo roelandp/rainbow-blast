@@ -644,7 +644,7 @@ export function playScreen(app: App): Screen {
     drawFloats(now)
     drawHearts(now)
     drawFlyers(now)
-    if (!papa.flying && now > nextPapa && !drag && !state.over && !overlay.classList.contains('show')) sendPapa()
+    if (save.papa !== false && !papa.flying && now > nextPapa && !drag && !state.over && !overlay.classList.contains('show')) sendPapa()
     // Count the score up smoothly.
     if (shownScore !== state.score) {
       shownScore += Math.max(1, Math.ceil((state.score - shownScore) * 0.15))

@@ -15,6 +15,8 @@ export interface Save {
   island: IslandState
   game: GameState | null
   sound: boolean
+  /** Papa flies over the board now and then (default on). */
+  papa: boolean
 }
 
 export interface Profile {
@@ -38,6 +40,7 @@ export function freshSave(): Save {
     island: newIsland(),
     game: null,
     sound: true,
+    papa: true,
   }
 }
 

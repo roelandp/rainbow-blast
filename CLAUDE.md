@@ -22,6 +22,7 @@ Blokjespuzzel in de stijl van Block Blast voor Wyne (8) en Viggo, met Katrien (R
 ## Papa
 - Af en toe (eerst na 25 tot 45 s, daarna elke 1 tot 2 minuten) vliegt Papa in zijn helikopter over het bord (`src/ui/papa.ts`, doorzichtige WebGL-laag die alleen tijdens de vlucht rendert). Builders uit Kit Nugget Eiland (`src/scene/visitors.ts`), gescande kop `public/papa/papa.glb`.
 - Tik op Papa: hij ontploft in een stortvloed van hartjes en laat een 💎 achter.
+- Uit te zetten in Instellingen (⚙️ rechtsboven in het menu, per speler `save.papa`, standaard aan). Daar staat ook Geluid.
 
 ## Katten
 - Per speler een kat (`src/pets.ts`): Katrien (zij/haar, Rainbow Island) of Kit Nugget (hij/hem, Kit Nugget Eiland). Elk in `public/pets/<id>/`: `model.glb`, pose-sprites (`beg`, `jump`, `confetti`, `sleep`) en `meow-1`, `meow-2`, `purr`. Kit Nugget heeft geen confetti-sprite: dat is zijn `happy`.

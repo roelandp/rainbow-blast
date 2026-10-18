@@ -20,12 +20,9 @@ export function menuScreen(app: App): Screen {
     audio.play('tap')
     app.go('island')
   })
-  const sound = button(save.sound ? '🔊' : '🔇', 'round-btn sound', () => {
-    save.sound = !save.sound
-    audio.effects = save.sound
-    sound.innerHTML = save.sound ? '🔊' : '🔇'
-    app.persist()
+  const sound = button('⚙️', 'round-btn sound', () => {
     audio.play('tap')
+    openSettings()
   })
   const who = button(`👤 ${escape(player.name)}`, 'pill who', () => {
     audio.play('tap')
@@ -171,6 +168,30 @@ export function menuScreen(app: App): Screen {
       ),
     )
     showOverlay(card)
+  }
+
+  // ---- Settings: sound and Papa, per player ----
+  function openSettings(): void {
+    const list = h('div', { class: 'settings' })
+    const toggle = (label: string, get: () => boolean, set: (on: boolean) => void) => {
+      const sw = h('button', { class: `switch ${get() ? 'on' : ''}`, type: 'button', role: 'switch', 'aria-checked': String(get()) }, h('span', { class: 'knob' }))
+      sw.addEventListener('click', () => {
+        set(!get())
+        sw.classList.toggle('on', get())
+        sw.setAttribute('aria-checked', String(get()))
+        app.persist()
+        audio.play('tap')
+      })
+      list.append(h('label', { class: 'setting' }, h('span', {}, label), sw))
+    }
+    toggle('🔊 Geluid', () => save.sound, (on) => {
+      save.sound = on
+      audio.effects = on
+    })
+    toggle('🚁 Papa vliegt voorbij', () => save.papa !== false, (on) => {
+      save.papa = on
+    })
+    showOverlay(h('div', { class: 'card' }, h('h2', {}, 'Instellingen'), list, button('Klaar', 'primary', closeOverlay)))
   }
 
   function showOverlay(card: HTMLElement): void {

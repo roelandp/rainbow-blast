@@ -798,3 +798,49 @@ body {
   pointer-events: none;
   z-index: 3;
 }
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 16px 0 6px;
+}
+.setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: var(--card-2);
+  border-radius: 20px;
+  padding: 12px 16px;
+  font-size: 22px;
+  font-weight: 800;
+  text-align: left;
+}
+.switch {
+  flex: none;
+  width: 84px;
+  height: 48px;
+  border: 0;
+  border-radius: 999px;
+  background: #d9d2e3;
+  position: relative;
+  transition: background 200ms;
+  padding: 0;
+}
+.switch .knob {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 6px var(--shadow);
+  transition: transform 220ms cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+.switch.on {
+  background: var(--good);
+}
+.switch.on .knob {
+  transform: translateX(36px);
+}
